@@ -200,10 +200,5 @@ README.html
 .idea
 .exercism
 
-### Spring Boot Sensitive Config ###
-src/main/resources/application.properties
-src/main/resources/application-dev.properties
-src/main/resources/application-prod.properties
-
 ### Local Variables
 .env
