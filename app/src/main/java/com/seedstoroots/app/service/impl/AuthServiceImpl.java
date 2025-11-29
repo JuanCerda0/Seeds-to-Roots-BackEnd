@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Service
-public class AuthServiceImpl extends AuthService {
+public class AuthServiceImpl implements AuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final JwtUtil jwtUtil;
@@ -62,12 +62,12 @@ public class AuthServiceImpl extends AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
         // Validar que no exista el email
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
+        if (usuarioRepository.existByEmail(request.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
         }
 
         // Validar que no exista el RUN
-        if (usuarioRepository.existsByRun(request.getRun())) {
+        if (usuarioRepository.existByRun(request.getRun())) {
             throw new RuntimeException("El RUN ya está registrado");
         }
 
