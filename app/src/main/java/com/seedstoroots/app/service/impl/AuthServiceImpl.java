@@ -62,12 +62,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
         // Validar que no exista el email
-        if (usuarioRepository.existByEmail(request.getEmail())) {
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
         }
 
         // Validar que no exista el RUN
-        if (usuarioRepository.existByRun(request.getRun())) {
+        if (usuarioRepository.existsByRun(request.getRun())) {
             throw new RuntimeException("El RUN ya está registrado");
         }
 

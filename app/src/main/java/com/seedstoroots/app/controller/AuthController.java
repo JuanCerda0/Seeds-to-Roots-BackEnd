@@ -3,6 +3,7 @@ package com.seedstoroots.app.controller;
 
 import com.seedstoroots.app.dto.AuthResponse;
 import com.seedstoroots.app.dto.LoginRequest;
+import com.seedstoroots.app.dto.RegisterRequest;
 import com.seedstoroots.app.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,16 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
 
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        try {
+            AuthResponse response = authService.register(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
