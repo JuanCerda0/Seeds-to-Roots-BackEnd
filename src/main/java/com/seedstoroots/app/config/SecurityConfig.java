@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                         // ✅ Usa HttpMethod en lugar de strings
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
