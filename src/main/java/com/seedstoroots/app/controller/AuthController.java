@@ -49,6 +49,19 @@ public class AuthController {
             AuthResponse response = authService.login(request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+
+        this.authService = authService;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+
+        try {
+
+            AuthResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+
             return ResponseEntity.badRequest().build();
         }
     }
@@ -80,4 +93,5 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
         }
     }
+}
 }
