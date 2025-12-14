@@ -25,15 +25,9 @@ public class EstadisticasServiceImpl implements EstadisticasService {
         Long totalProductos = productoRepository.count();
         Long totalUsuarios = usuarioRepository.count();
 
-        Long productosActivos = productoRepository.findByActivoTrue().stream().count();
-
-        Long usuariosActivos = usuarioRepository.findAll().stream()
-                .filter(u -> u.getActivo())
-                .count();
-
-        Long productosBajoStock = productoRepository.findAll().stream()
-                .filter(p -> p.getStock() < 10)
-                .count();
+        Long productosActivos = productoRepository.countByActivoTrue();
+        Long usuariosActivos = usuarioRepository.countByActivoTrue();
+        Long productosBajoStock = productoRepository.countByStockLessThan(10);
 
         return new EstadisticasResponse(
                 totalProductos,

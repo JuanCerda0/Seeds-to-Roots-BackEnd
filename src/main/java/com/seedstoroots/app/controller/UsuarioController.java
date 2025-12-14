@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "*")
 @Tag(name = "Usuarios", description = "Gestión de usuarios del sistema")
 @SecurityRequirement(name = "bearer-jwt")
 public class UsuarioController {
