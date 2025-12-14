@@ -1,5 +1,6 @@
 package com.seedstoroots.app.controller;
 
+import com.seedstoroots.app.dto.UsuarioCreateRequest;
 import com.seedstoroots.app.dto.UsuarioResponse;
 import com.seedstoroots.app.dto.UsuarioUpdateRequest;
 import com.seedstoroots.app.service.UsuarioService;
@@ -11,14 +12,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@Tag(name = "Usuarios", description = "Gestión de usuarios del sistema")
+@Tag(name = "Usuarios", description = "Gestion de usuarios del sistema")
 @SecurityRequirement(name = "bearer-jwt")
 public class UsuarioController {
 
@@ -26,6 +35,34 @@ public class UsuarioController {
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
+    }
+
+    @Operation(
+            summary = "Crear usuario",
+            description = "Crea un nuevo usuario desde el panel de administracion. Requiere rol ADMIN."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Usuario creado exitosamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UsuarioResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Datos invalidos o duplicados"
+            )
+    })
+    @PostMapping
+    public ResponseEntity<UsuarioResponse> crear(@RequestBody UsuarioCreateRequest request) {
+        try {
+            UsuarioResponse response = usuarioService.crear(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Operation(
@@ -53,7 +90,7 @@ public class UsuarioController {
 
     @Operation(
             summary = "Obtener usuario por ID",
-            description = "Obtiene los detalles de un usuario específico. Requiere rol ADMIN."
+            description = "Obtiene los detalles de un usuario especifico. Requiere rol ADMIN."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -86,7 +123,7 @@ public class UsuarioController {
 
     @Operation(
             summary = "Obtener usuario por email",
-            description = "Busca un usuario por su dirección de email. Requiere rol ADMIN."
+            description = "Busca un usuario por su direccion de email. Requiere rol ADMIN."
     )
     @ApiResponses(value = {
             @ApiResponse(

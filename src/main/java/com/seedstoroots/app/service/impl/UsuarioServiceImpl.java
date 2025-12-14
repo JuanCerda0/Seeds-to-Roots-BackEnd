@@ -1,10 +1,13 @@
 package com.seedstoroots.app.service.impl;
 
+import com.seedstoroots.app.dto.UsuarioCreateRequest;
 import com.seedstoroots.app.dto.UsuarioResponse;
 import com.seedstoroots.app.dto.UsuarioUpdateRequest;
+import com.seedstoroots.app.entity.Rol;
 import com.seedstoroots.app.entity.Usuario;
 import com.seedstoroots.app.repository.UsuarioRepository;
 import com.seedstoroots.app.service.UsuarioService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +19,42 @@ import java.util.stream.Collectors;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
+
+    @Override
+    public UsuarioResponse crear(UsuarioCreateRequest request) {
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("El email ya está registrado");
+        }
+        if (usuarioRepository.existsByRun(request.getRun())) {
+            throw new RuntimeException("El RUN ya está registrado");
+        }
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new RuntimeException("La contraseña es obligatoria");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setRun(request.getRun());
+        usuario.setNombre(request.getNombre());
+        usuario.setApellidos(request.getApellidos());
+        usuario.setEmail(request.getEmail());
+        usuario.setTelefono(request.getTelefono());
+        usuario.setDireccion(request.getDireccion());
+        usuario.setRegion(request.getRegion());
+        usuario.setComuna(request.getComuna());
+        usuario.setCiudad(request.getCiudad());
+        usuario.setFechaNacimiento(request.getFechaNacimiento());
+        usuario.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        usuario.setRol(obtenerRol(request.getRol()));
+        usuario.setActivo(request.getActivo() != null ? request.getActivo() : true);
+
+        Usuario guardado = usuarioRepository.save(usuario);
+        return convertirAResponse(guardado);
     }
 
     @Override
@@ -91,6 +127,17 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // O eliminación física (descomentar si prefieres):
         // usuarioRepository.delete(usuario);
+    }
+
+    private Rol obtenerRol(String rol) {
+        if (rol == null || rol.isBlank()) {
+            return Rol.CLIENTE;
+        }
+        try {
+            return Rol.valueOf(rol.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Rol inválido");
+        }
     }
 
     private UsuarioResponse convertirAResponse(Usuario usuario) {

@@ -60,7 +60,7 @@ El servicio queda en `http://localhost:8080`. Puedes validar con `GET /test` o u
 |---------------|-------------------|-----------------------------------------------------------------|-----------|
 | Auth          | `/auth`           | Login y registro. Genera tokens JWT con rol e ID del usuario.   | Público   |
 | Productos     | `/api/productos`  | CRUD completo + últimos productos (`/recientes`).               | GET públicos, resto solo `ADMIN` |
-| Usuarios      | `/api/usuarios`   | Listado, consulta, actualización y baja lógica.                 | `ADMIN`   |
+| Usuarios      | `/api/usuarios`   | CRUD administrativo completo (incluye creación vía POST).       | `ADMIN`   |
 | Carrito       | `/api/carrito`    | Gestión del carrito asociado al usuario autenticado.            | `CLIENTE`/`ADMIN` autenticados |
 | Estadísticas  | `/api/estadisticas` | Totales de productos, usuarios, stock bajo, etc.              | `ADMIN`   |
 | Test          | `/test`           | Ping simple para monitoreo.                                     | Público   |
@@ -69,7 +69,7 @@ El servicio queda en `http://localhost:8080`. Puedes validar con `GET /test` o u
 
 - El filtro `JwtAuthenticationFilter` valida el token y establece el `Authentication` con el rol (`ROLE_ADMIN`/`ROLE_CLIENTE`).
 - `CarritoController` cruza el `usuarioId` de la URL con el que viene en el JWT para impedir que un usuario modifique carritos ajenos.
-- Las reglas por rol están centralizadas en `SecurityConfig` usando `HttpSecurity#authorizeHttpRequests`.
+- Las reglas por rol están centralizadas en `SecurityConfig` usando `HttpSecurity#authorizeHttpRequests`; los administradores también pueden crear usuarios directamente desde `/api/usuarios` (POST).
 
 ## Pruebas automatizadas
 
@@ -86,4 +86,3 @@ Se cubren servicios y controladores clave (productos, usuarios, carrito, auth) a
 - **Soft delete** para usuarios y productos (`activo = false`).
 - **Configuración CORS** parametrizada vía `cors.allowed-origins` para mantener sincronizado back/front.
 - **Swagger/OpenAPI** preconfigurado para facilitar la revisión del profesor o QA.
-
