@@ -10,6 +10,8 @@ import java.util.List;
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
     List<Producto> findByCategoria(String categoria);
     List<Producto> findByActivoTrue();
+    long countByActivoTrue();
+    long countByStockLessThan(Integer stock);
 
     @Query("SELECT p FROM Producto p WHERE p.activo = true ORDER BY p.fechaCreacion DESC")
     List<Producto> findProductosRecientes();
