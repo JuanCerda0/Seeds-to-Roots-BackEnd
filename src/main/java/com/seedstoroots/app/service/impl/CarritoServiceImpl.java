@@ -41,29 +41,35 @@ public class CarritoServiceImpl implements CarritoService {
     @Override
     public CarritoResponse agregarProducto(Long usuarioId, CarritoRequest request) {
         Carrito carrito = obtenerOCrearCarrito(usuarioId);
+        int cantidadSolicitada = validarCantidad(request.getCantidad());
+
         Producto producto = productoRepository.findById(request.getProductoId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        asegurarProductoDisponible(producto);
 
-        // Verificar si el producto ya está en el carrito
+        // Verificar si el producto ya esta en el carrito
         CarritoItem itemExistente = carrito.getItems().stream()
                 .filter(item -> item.getProducto().getId().equals(producto.getId()))
                 .findFirst()
                 .orElse(null);
 
         if (itemExistente != null) {
-            // Si existe, aumentar cantidad
-            itemExistente.setCantidad(itemExistente.getCantidad() + request.getCantidad());
+            // Si existe, aumentar cantidad respetando el stock
+            int nuevaCantidad = itemExistente.getCantidad() + cantidadSolicitada;
+            validarStockDisponible(producto, nuevaCantidad);
+            itemExistente.setCantidad(nuevaCantidad);
             itemExistente.setSubtotal(itemExistente.getPrecioUnitario()
                     .multiply(BigDecimal.valueOf(itemExistente.getCantidad())));
         } else {
             // Si no existe, crear nuevo item
+            validarStockDisponible(producto, cantidadSolicitada);
             CarritoItem nuevoItem = new CarritoItem();
             nuevoItem.setCarrito(carrito);
             nuevoItem.setProducto(producto);
             nuevoItem.setPrecioUnitario(producto.getPrecio());
-            nuevoItem.setCantidad(request.getCantidad());
+            nuevoItem.setCantidad(cantidadSolicitada);
             nuevoItem.setSubtotal(producto.getPrecio()
-                    .multiply(BigDecimal.valueOf(request.getCantidad())));
+                    .multiply(BigDecimal.valueOf(cantidadSolicitada)));
 
             carrito.getItems().add(nuevoItem);
         }
@@ -75,15 +81,20 @@ public class CarritoServiceImpl implements CarritoService {
     @Override
     public CarritoResponse actualizarCantidad(Long usuarioId, CarritoRequest request) {
         Carrito carrito = obtenerOCrearCarrito(usuarioId);
+        int cantidadSolicitada = validarCantidad(request.getCantidad());
 
         CarritoItem item = carrito.getItems().stream()
                 .filter(i -> i.getProducto().getId().equals(request.getProductoId()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado en el carrito"));
 
-        item.setCantidad(request.getCantidad());
+        Producto producto = item.getProducto();
+        asegurarProductoDisponible(producto);
+        validarStockDisponible(producto, cantidadSolicitada);
+
+        item.setCantidad(cantidadSolicitada);
         item.setSubtotal(item.getPrecioUnitario()
-                .multiply(BigDecimal.valueOf(request.getCantidad())));
+                .multiply(BigDecimal.valueOf(cantidadSolicitada)));
 
         carritoRepository.save(carrito);
         return convertirAResponse(carrito);
@@ -147,5 +158,25 @@ public class CarritoServiceImpl implements CarritoService {
         response.setCantidad(item.getCantidad());
         response.setSubtotal(item.getSubtotal());
         return response;
+    }
+
+    private int validarCantidad(Integer cantidad) {
+        if (cantidad == null || cantidad <= 0) {
+            throw new RuntimeException("La cantidad debe ser mayor a cero");
+        }
+        return cantidad;
+    }
+
+    private void asegurarProductoDisponible(Producto producto) {
+        if (!Boolean.TRUE.equals(producto.getActivo())) {
+            throw new RuntimeException("El producto no esta disponible");
+        }
+    }
+
+    private void validarStockDisponible(Producto producto, int cantidadRequerida) {
+        Integer stock = producto.getStock();
+        if (stock == null || cantidadRequerida > stock) {
+            throw new RuntimeException("Stock insuficiente para el producto");
+        }
     }
 }

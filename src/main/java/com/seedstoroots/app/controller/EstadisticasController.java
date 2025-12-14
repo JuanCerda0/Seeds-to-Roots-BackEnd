@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/estadisticas")
-@CrossOrigin(origins = "*")
 @Tag(name = "Estadísticas", description = "Dashboard de estadísticas del sistema")
 @SecurityRequirement(name = "bearer-jwt")
 public class EstadisticasController {

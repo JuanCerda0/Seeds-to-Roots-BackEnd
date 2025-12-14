@@ -2,7 +2,9 @@ package com.seedstoroots.app.controller;
 
 import com.seedstoroots.app.dto.CarritoRequest;
 import com.seedstoroots.app.dto.CarritoResponse;
+import com.seedstoroots.app.dto.UsuarioResponse;
 import com.seedstoroots.app.service.CarritoService;
+import com.seedstoroots.app.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,20 +13,24 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/carrito")
-@CrossOrigin(origins = "*")
 @Tag(name = "Carrito", description = "Gestión del carrito de compras")
 @SecurityRequirement(name = "bearer-jwt")
 public class CarritoController {
 
     private final CarritoService carritoService;
+    private final UsuarioService usuarioService;
 
-    public CarritoController(CarritoService carritoService) {
+    public CarritoController(CarritoService carritoService, UsuarioService usuarioService) {
         this.carritoService = carritoService;
+        this.usuarioService = usuarioService;
     }
 
     @Operation(
@@ -50,6 +56,9 @@ public class CarritoController {
             @Parameter(description = "ID del usuario", required = true)
             @PathVariable Long usuarioId) {
         try {
+            if (!usuarioId.equals(obtenerUsuarioAutenticadoId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             return ResponseEntity.ok(carritoService.obtenerCarrito(usuarioId));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -80,6 +89,9 @@ public class CarritoController {
             @PathVariable Long usuarioId,
             @RequestBody CarritoRequest request) {
         try {
+            if (!usuarioId.equals(obtenerUsuarioAutenticadoId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             return ResponseEntity.ok(carritoService.agregarProducto(usuarioId, request));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -110,6 +122,9 @@ public class CarritoController {
             @PathVariable Long usuarioId,
             @RequestBody CarritoRequest request) {
         try {
+            if (!usuarioId.equals(obtenerUsuarioAutenticadoId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             return ResponseEntity.ok(carritoService.actualizarCantidad(usuarioId, request));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -141,6 +156,9 @@ public class CarritoController {
             @Parameter(description = "ID del producto a eliminar", required = true)
             @PathVariable Long productoId) {
         try {
+            if (!usuarioId.equals(obtenerUsuarioAutenticadoId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             return ResponseEntity.ok(carritoService.eliminarProducto(usuarioId, productoId));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -166,10 +184,22 @@ public class CarritoController {
             @Parameter(description = "ID del usuario", required = true)
             @PathVariable Long usuarioId) {
         try {
+            if (!usuarioId.equals(obtenerUsuarioAutenticadoId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             carritoService.limpiarCarrito(usuarioId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private Long obtenerUsuarioAutenticadoId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+        UsuarioResponse usuario = usuarioService.obtenerPorEmail(authentication.getName());
+        return usuario.getId();
     }
 }
