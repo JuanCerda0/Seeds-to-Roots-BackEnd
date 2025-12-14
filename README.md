@@ -87,10 +87,3 @@ Se cubren servicios y controladores clave (productos, usuarios, carrito, auth) a
 - **Configuración CORS** parametrizada vía `cors.allowed-origins` para mantener sincronizado back/front.
 - **Swagger/OpenAPI** preconfigurado para facilitar la revisión del profesor o QA.
 
-## Próximos pasos sugeridos
-
-- Añadir perfiles (`application-dev.yml`, `application-prod.yml`) para aislar credenciales por entorno.
-- Agregar pruebas de integración que cubran el flujo completo Auth → Carrito → Compra.
-- Dockerizar la app + DB si se requiere despliegue rápido en la defensa.
-
-Con esta guía deberías poder explicar claramente cómo está construido el backend y cómo interactuar con él durante la presentación. ¡Éxito! 🚀
